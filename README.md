@@ -5,6 +5,10 @@ Scala + libGDX によるストラテジーゲーム実装
 
 ## Usage
 
-Desktop
+### Desktop(develop)
+
+`$ sbt dev/run`
+
+### Desktop
 
 `$ sbt desktop/run`
