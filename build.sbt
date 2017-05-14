@@ -12,6 +12,7 @@ lazy val core = (project in file("core"))
       "com.badlogicgames.gdx" % "gdx" % "1.9.6"
     )
   )
+  .dependsOn(shared)
 
 lazy val desktop = (project in file("desktop"))
   .settings(
@@ -44,13 +45,20 @@ lazy val server = (project in file("server"))
   .settings(
     name := "scalategy-server",
     version := appV,
-    scalaVersion := scalaV
+    scalaVersion := scalaV,
+    libraryDependencies ++= Seq(
+      "com.typesafe.akka" %% "akka-http" % "10.0.6"
+    )
   )
-  .dependsOn(external)
+  .dependsOn(shared, external)
 
 lazy val shared = (project in file("shared"))
   .settings(
     name := "scalategy-shared",
     version := appV,
-    scalaVersion := scalaV
+    scalaVersion := scalaV,
+    libraryDependencies ++= Seq(
+      "com.lihaoyi" %% "autowire" % "0.2.5",
+      "com.lihaoyi" %% "upickle" % "0.4.3"
+    )
   )
