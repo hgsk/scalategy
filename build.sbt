@@ -62,3 +62,29 @@ lazy val shared = (project in file("shared"))
       "com.lihaoyi" %% "upickle" % "0.4.3"
     )
   )
+
+lazy val tools = (project in file("tools"))
+  .settings(
+    scalaVersion := scalaV,
+    libraryDependencies ++= Seq(
+      "com.badlogicgames.gdx" % "gdx-tools" % "1.9.6"
+    )
+  )
+  .dependsOn(desktop)
+
+lazy val hiero = (project in file("tools/hiero"))
+  .settings(
+    scalaVersion := scalaV,
+    mainClass in(Compile, run) := Some("com.badlogic.gdx.tools.hiero.Hiero"),
+    fork := true
+  )
+  .dependsOn(tools)
+
+lazy val particleEditor = (project in file("tools/particleEditor"))
+  .settings(
+    scalaVersion := scalaV,
+    mainClass in(Compile, run) := Some("com.badlogic.gdx.tools.particleeditor.ParticleEditor"),
+    fork := true
+  )
+  .dependsOn(tools)
+
