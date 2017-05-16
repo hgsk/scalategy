@@ -12,8 +12,8 @@ class DevListener(width: Int, height: Int) extends AppListener(width, height) {
   import autowire._
 
   import scala.concurrent.ExecutionContext.Implicits.global
-  override def initialize(): Unit = {
-    super.initialize()
+  override def create(): Unit = {
+    super.create()
     AutowireClient[Api]
       .echo("Hello libGDX!")
       .call()
