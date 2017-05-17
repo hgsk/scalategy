@@ -68,10 +68,14 @@ class AppListener(stageWidth: Int, stageHeight: Int) extends ApplicationListener
 
 class GameScene extends Scene {
   val ASSET_CIRCLE = "circle.png"
+  val ASSET_SQUARE = "square.png"
+  val ASSET_DIAMOND = "diamond.png"
   val ASSET_FONT = "caladea_bold.fnt"
   override def assets: Seq[(String, Class[_])] = {
     super.assets ++ Seq(
       (ASSET_CIRCLE, classOf[Texture]),
+      (ASSET_SQUARE, classOf[Texture]),
+      (ASSET_DIAMOND, classOf[Texture]),
       (ASSET_FONT, classOf[BitmapFont])
     )
   }
