@@ -8,7 +8,6 @@ lazy val core = (project in file("core"))
     scalaVersion := scalaV,
     resourceDirectory in Compile := baseDirectory.value / "assets",
     libraryDependencies ++= Seq(
-      "com.badlogicgames.gdx" % "gdx-backend-lwjgl" % "1.9.6",
       "com.badlogicgames.gdx" % "gdx" % "1.9.6"
     )
   )
@@ -20,6 +19,7 @@ lazy val desktop = (project in file("desktop"))
     version := appV,
     scalaVersion := scalaV,
     libraryDependencies ++= Seq(
+      "com.badlogicgames.gdx" % "gdx-backend-lwjgl" % "1.9.6",
       "com.badlogicgames.gdx" % "gdx-platform" % "1.9.6" classifier "natives-desktop"
     )
   )

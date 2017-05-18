@@ -15,7 +15,8 @@ import upickle.default._
 
 import scala.concurrent.{Future, Promise}
 
-class AppListener(stageWidth: Int, stageHeight: Int) extends ApplicationListener {
+class AppListener()(implicit appSettings: AppSettings) extends ApplicationListener {
+  import appSettings._
   lazy val assetManager = new AssetManager()
   lazy val stage: Stage = new Stage(new FitViewport(stageWidth, stageHeight))
   private var initialized: Boolean = false

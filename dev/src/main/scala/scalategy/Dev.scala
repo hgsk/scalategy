@@ -4,11 +4,12 @@ import scala.util.{Failure, Success}
 import scalategy.shared.Api
 
 object Dev extends Desktop with App {
-  override def appListener = new DevListener(width, height)
+  implicit override val appSettings = new DevSettings {}
+  override def appListener = new DevListener
   initialize()
 }
 
-class DevListener(width: Int, height: Int) extends AppListener(width, height) {
+class DevListener()(implicit appSettings: AppSettings) extends AppListener {
   import autowire._
 
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -23,3 +24,5 @@ class DevListener(width: Int, height: Int) extends AppListener(width, height) {
       }
   }
 }
+
+trait DevSettings extends DesktopSettings
