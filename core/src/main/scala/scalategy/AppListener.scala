@@ -2,18 +2,15 @@ package scalategy
 
 import com.badlogic.gdx.Net.{HttpMethods, HttpResponseListener}
 import com.badlogic.gdx.assets.AssetManager
-import com.badlogic.gdx.graphics.g2d.BitmapFont
-import com.badlogic.gdx.graphics.{Color, GL20, Texture}
+import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.net.HttpRequestBuilder
-import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
-import com.badlogic.gdx.scenes.scene2d.ui.{Image, Label, Table}
-import com.badlogic.gdx.scenes.scene2d.{Group, Stage}
-import com.badlogic.gdx.utils.Align
+import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.badlogic.gdx.{ApplicationListener, Gdx, Net}
 import upickle.default._
 
 import scala.concurrent.{Future, Promise}
+import scalategy.scenes.{GameScene, Scene}
 
 class AppListener()(implicit appSettings: AppSettings) extends ApplicationListener {
   import appSettings._
@@ -65,51 +62,6 @@ class AppListener()(implicit appSettings: AppSettings) extends ApplicationListen
   }
   override def resume(): Unit = ()
   override def pause(): Unit = ()
-}
-
-class GameScene extends Scene {
-  val ASSET_CIRCLE = "circle.png"
-  val ASSET_SQUARE = "square.png"
-  val ASSET_DIAMOND = "diamond.png"
-  val ASSET_FONT = "caladea_bold.fnt"
-  override def assets: Seq[(String, Class[_])] = {
-    super.assets ++ Seq(
-      (ASSET_CIRCLE, classOf[Texture]),
-      (ASSET_SQUARE, classOf[Texture]),
-      (ASSET_DIAMOND, classOf[Texture]),
-      (ASSET_FONT, classOf[BitmapFont])
-    )
-  }
-  override def enter(assetManager: AssetManager): Group = {
-    val circleTexture = assetManager.get[Texture](ASSET_CIRCLE)
-    val main = new Group
-    for (_ <- 1 to 100) {
-      val circleImage = new Image(circleTexture)
-      circleImage.setColor(Math.random().toFloat, Math.random().toFloat, Math.random().toFloat, 1)
-      circleImage.setSize(10, 10)
-      circleImage.setPosition((Math.random() * 1000).toFloat, (Math.random() * 1000).toFloat)
-      main.addActor(circleImage)
-    }
-    val bitmapFont = assetManager.get[BitmapFont](ASSET_FONT)
-    val table = new Table()
-    val labelStyle = new LabelStyle(bitmapFont, new Color(0xffffffff))
-    table.add(new Label("Header", labelStyle)).align(Align.left)
-    table.row()
-    table.add(main).expand().align(Align.bottomLeft)
-    table.row()
-    table.add(new Label("Footer", labelStyle)).align(Align.left)
-    table.setFillParent(true)
-    table
-  }
-  override def update(assetManager: AssetManager): Unit = ()
-  override def exit(assetManager: AssetManager): Unit = ()
-}
-
-trait Scene {
-  def assets: Seq[(String, Class[_])] = Seq.empty
-  def enter(assetManager: AssetManager): Group
-  def update(assetManager: AssetManager): Unit
-  def exit(assetManager: AssetManager): Unit
 }
 
 object AutowireClient extends autowire.Client[String, Reader, Writer] {
