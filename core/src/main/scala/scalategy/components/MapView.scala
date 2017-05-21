@@ -2,56 +2,79 @@ package scalategy.components
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.assets.AssetManager
-import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.g2d.Batch
+import com.badlogic.gdx.graphics.{Color, Texture}
 import com.badlogic.gdx.scenes.scene2d.ui.Image
-import com.badlogic.gdx.scenes.scene2d.{Actor, Group, InputEvent, InputListener}
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
+import com.badlogic.gdx.scenes.scene2d.{Actor, Group, InputEvent}
 
 import scalategy.AppSettings
 import scalategy.common.UseAssets
 
 case class MapView()(implicit appSettings: AppSettings) extends Group with Component {
-  import MapView._
   import appSettings.stageHeight
+
+  import MapView._
   val xOffset = 0
   val yOffset = 30
+  val tileSize = 40
+  val dragSensitivity: Int = 5 * 5 * 2
+  private var tiles: Map[(Int, Int), Actor] = Map.empty
   override def initialize(assetManager: AssetManager): Actor = {
     val squareTexture = assetManager.get[Texture](ASSET_SQUARE)
-    val mapSize = 20
+    val diamondTexture = assetManager.get[Texture](ASSET_DIAMOND)
+    val mapSizeX = 30
+    val mapSizeY = 20
     val mapWidth = 800
     val mapHeight = 540
-    val tileSize = 40
-    val minX = ((tileSize + 1) * mapSize - mapWidth - xOffset) * -1
-    val minY = ((tileSize + 1) * mapSize - mapHeight - yOffset) * -1
+    val minX = ((tileSize + 1) * mapSizeX - mapWidth - xOffset) * -1
+    val minY = ((tileSize + 1) * mapSizeY - mapHeight - yOffset) * -1
+    val yellow = new Color(.9f, .9f, 0, 1)
     setPosition(xOffset, yOffset)
-    for (x <- 0 until mapSize; y <- 0 until mapSize) {
+    for (x <- 0 until mapSizeX; y <- 0 until mapSizeY) {
       val square = new Image(squareTexture)
       square.setBounds(x * (tileSize + 1), y * (tileSize + 1), tileSize, tileSize)
       addActor(square)
+      tiles = tiles.updated((x, y), square)
     }
-    addListener(new InputListener() {
+    for (_ <- 0 until 50) {
+      val x = (Math.random() * mapSizeX).toInt
+      val y = (Math.random() * mapSizeY).toInt
+      val resource = new Image(diamondTexture)
+      resource.setBounds(x * (tileSize + 1) + tileSize / 4, y * (tileSize + 1), tileSize / 2, tileSize)
+      resource.setColor(yellow)
+      addActor(resource)
+    }
+    addListener(new ClickListener() {
       private var pos: (Float, Float) = _
       override def touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: Int): Boolean = {
         pos = (Gdx.input.getX - getX, stageHeight - Gdx.input.getY - getY)
-        true
+        super.touchDown(event, x, y, pointer, button)
       }
       override def touchDragged(event: InputEvent, x: Float, y: Float, pointer: Int): Unit = {
-        setPosition(
-          (Gdx.input.getX - pos._1).max(minX).min(xOffset),
-          (stageHeight - Gdx.input.getY - pos._2).max(minY).min(yOffset)
-        )
+        val dx = x - getTouchDownX
+        val dy = y - getTouchDownY
+        if (dx * dx + dy * dy >= dragSensitivity) {
+          cancel()
+          setPosition(
+            (Gdx.input.getX - pos._1).max(minX).min(xOffset),
+            (stageHeight - Gdx.input.getY - pos._2).max(minY).min(yOffset)
+          )
+          super.touchDragged(event, x, y, pointer)
+        }
+      }
+      override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
+        tileByPos(x, y).foreach(_.setColor(1, 0, 0, 1))
       }
     })
     this
   }
-  override def draw(batch: Batch, parentAlpha: Float): Unit = {
-    super.draw(batch, parentAlpha)
-  }
-
+  private def tileByPos(x: Float, y: Float): Option[Actor] = tiles.get((x / (tileSize + 1)).toInt, (y / (tileSize + 1)).toInt)
 }
 object MapView extends UseAssets {
   val ASSET_SQUARE = "square.png"
+  val ASSET_DIAMOND = "diamond.png"
   override def assets: Assets = Set(
-    (ASSET_SQUARE, classOf[Texture])
+    (ASSET_SQUARE, classOf[Texture]),
+    (ASSET_DIAMOND, classOf[Texture])
   )
 }
