@@ -8,7 +8,8 @@ lazy val core = (project in file("core"))
     scalaVersion := scalaV,
     resourceDirectory in Compile := baseDirectory.value / "assets",
     libraryDependencies ++= Seq(
-      "com.badlogicgames.gdx" % "gdx" % "1.9.6"
+      "com.badlogicgames.gdx" % "gdx" % "1.9.6",
+      "io.suzaku" %% "diode" % "1.1.2"
     )
   )
   .dependsOn(shared)

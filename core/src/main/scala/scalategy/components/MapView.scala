@@ -6,11 +6,13 @@ import com.badlogic.gdx.graphics.{Color, Texture}
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.scenes.scene2d.{Actor, Group, InputEvent}
+import diode.{Action, Dispatcher}
 
 import scalategy.AppSettings
 import scalategy.common.UseAssets
+import scalategy.shared.models.{MapData, Tile}
 
-case class MapView()(implicit appSettings: AppSettings) extends Group with Component {
+case class MapView(initialMapData: MapData, dispatcher: Dispatcher)(implicit appSettings: AppSettings) extends Group with Component {
   import appSettings.stageHeight
 
   import MapView._
@@ -19,11 +21,12 @@ case class MapView()(implicit appSettings: AppSettings) extends Group with Compo
   val tileSize = 40
   val dragSensitivity: Int = 5 * 5 * 2
   private var tiles: Map[(Int, Int), Actor] = Map.empty
+  private var mapData: MapData = initialMapData
   override def initialize(assetManager: AssetManager): Actor = {
     val squareTexture = assetManager.get[Texture](ASSET_SQUARE)
     val diamondTexture = assetManager.get[Texture](ASSET_DIAMOND)
-    val mapSizeX = 30
-    val mapSizeY = 20
+    val mapSizeX = mapData.mapSize.x
+    val mapSizeY = mapData.mapSize.y
     val mapWidth = 800
     val mapHeight = 540
     val minX = ((tileSize + 1) * mapSizeX - mapWidth - xOffset) * -1
@@ -62,13 +65,11 @@ case class MapView()(implicit appSettings: AppSettings) extends Group with Compo
           super.touchDragged(event, x, y, pointer)
         }
       }
-      override def clicked(event: InputEvent, x: Float, y: Float): Unit = {
-        tileByPos(x, y).foreach(_.setColor(1, 0, 0, 1))
-      }
+      override def clicked(event: InputEvent, x: Float, y: Float): Unit = dispatcher(SelectTile(tileByPos(x, y)))
     })
     this
   }
-  private def tileByPos(x: Float, y: Float): Option[Actor] = tiles.get((x / (tileSize + 1)).toInt, (y / (tileSize + 1)).toInt)
+  private def tileByPos(x: Float, y: Float): Tile = Tile((x / (tileSize + 1)).toInt, (y / (tileSize + 1)).toInt)
 }
 object MapView extends UseAssets {
   val ASSET_SQUARE = "square.png"
@@ -77,4 +78,5 @@ object MapView extends UseAssets {
     (ASSET_SQUARE, classOf[Texture]),
     (ASSET_DIAMOND, classOf[Texture])
   )
+  case class SelectTile(tile: Tile) extends Action
 }
