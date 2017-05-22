@@ -10,7 +10,8 @@ import diode.{Action, Dispatcher}
 
 import scalategy.AppSettings
 import scalategy.common.UseAssets
-import scalategy.shared.models.{MapData, Tile}
+import scalategy.models.MapData
+import scalategy.shared.models.{FieldEntity, Tile}
 
 case class MapView(initialMapData: MapData, dispatcher: Dispatcher)(implicit appSettings: AppSettings) extends Group with Component {
   import appSettings.stageHeight
@@ -20,33 +21,41 @@ case class MapView(initialMapData: MapData, dispatcher: Dispatcher)(implicit app
   val yOffset = 30
   val tileSize = 40
   val dragSensitivity: Int = 5 * 5 * 2
-  private var tiles: Map[(Int, Int), Actor] = Map.empty
+  val entityLayer = new Group
+  private var tiles: Map[Tile, Actor] = Map.empty
   private var mapData: MapData = initialMapData
+  def updateSelectedTiles(selectedTiles: Set[Tile]): Unit = {
+    mapData.selectedTiles.map(tiles).foreach(_.setColor(1, 1, 1, 1))
+    selectedTiles.map(tiles).foreach(_.setColor(1, 0, 0, 1))
+    mapData = mapData.copy(selectedTiles = selectedTiles)
+  }
+  def updateEntityMap(entityMap: Map[Tile, FieldEntity], assetManager: AssetManager): Unit = {
+    entityLayer.clear()
+    val diamondTexture = assetManager.get[Texture](ASSET_DIAMOND)
+    val yellow = new Color(.9f, .9f, 0, 1)
+    for ((tile, _) <- entityMap) {
+      val resource = new Image(diamondTexture)
+      resource.setBounds(tile.x * (tileSize + 1) + tileSize / 4, tile.y * (tileSize + 1), tileSize / 2, tileSize)
+      resource.setColor(yellow)
+      entityLayer.addActor(resource)
+    }
+  }
   override def initialize(assetManager: AssetManager): Actor = {
     val squareTexture = assetManager.get[Texture](ASSET_SQUARE)
-    val diamondTexture = assetManager.get[Texture](ASSET_DIAMOND)
     val mapSizeX = mapData.mapSize.x
     val mapSizeY = mapData.mapSize.y
     val mapWidth = 800
     val mapHeight = 540
     val minX = ((tileSize + 1) * mapSizeX - mapWidth - xOffset) * -1
     val minY = ((tileSize + 1) * mapSizeY - mapHeight - yOffset) * -1
-    val yellow = new Color(.9f, .9f, 0, 1)
     setPosition(xOffset, yOffset)
     for (x <- 0 until mapSizeX; y <- 0 until mapSizeY) {
       val square = new Image(squareTexture)
       square.setBounds(x * (tileSize + 1), y * (tileSize + 1), tileSize, tileSize)
       addActor(square)
-      tiles = tiles.updated((x, y), square)
+      tiles = tiles.updated(Tile(x, y), square)
     }
-    for (_ <- 0 until 50) {
-      val x = (Math.random() * mapSizeX).toInt
-      val y = (Math.random() * mapSizeY).toInt
-      val resource = new Image(diamondTexture)
-      resource.setBounds(x * (tileSize + 1) + tileSize / 4, y * (tileSize + 1), tileSize / 2, tileSize)
-      resource.setColor(yellow)
-      addActor(resource)
-    }
+    addActor(entityLayer)
     addListener(new ClickListener() {
       private var pos: (Float, Float) = _
       override def touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: Int): Boolean = {
@@ -79,4 +88,5 @@ object MapView extends UseAssets {
     (ASSET_DIAMOND, classOf[Texture])
   )
   case class SelectTile(tile: Tile) extends Action
+  case class AddEntities(entityMap: Map[Tile, FieldEntity]) extends Action
 }

@@ -1,11 +1,8 @@
 package scalategy.shared.models
 
-/**
-  * マップ情報
-  */
-case class MapData(mapSize: MapSize, selectedTile: Set[Tile])
-object MapData {
-  def empty(sizeX: Int, sizeY: Int) = MapData(MapSize(sizeX, sizeY), Set.empty)
+trait MapDataLike {
+  val mapSize: MapSize
+  val entityMap: Map[Tile, FieldEntity]
 }
 
 case class MapSize(x: Int, y: Int)

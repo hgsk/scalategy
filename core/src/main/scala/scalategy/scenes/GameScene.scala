@@ -10,8 +10,9 @@ import diode.{ActionHandler, ActionResult, Circuit}
 
 import scalategy.AppSettings
 import scalategy.components.MapView
-import scalategy.components.MapView.SelectTile
-import scalategy.shared.models.MapData
+import scalategy.components.MapView.{AddEntities, SelectTile}
+import scalategy.models.MapData
+import scalategy.shared.models.{FieldEntity, MapSize, Tile}
 
 class GameScene()(implicit val appSettings: AppSettings) extends Scene {
   scene =>
@@ -35,13 +36,20 @@ class GameScene()(implicit val appSettings: AppSettings) extends Scene {
     val headerBg = new Image(squareTexture)
     val footerBg = new Image(squareTexture)
     val headerLabel = new Label("Header", labelStyle)
-    val circuit = new GameCircuit(GameModel(MapData.empty(30, 30)))
+    val circuit = new GameCircuit(GameModel(MapData.empty(MapSize(30, 30))))
+    val mapView = MapView(circuit.initialModel.mapData, circuit)
 
-    circuit.subscribe(circuit.zoom(_.mapData))(mapData => println(mapData))
+    circuit.subscribe(circuit.zoom(_.mapData.selectedTiles)) {
+      selectedTiles => mapView.updateSelectedTiles(selectedTiles.value)
+    }
+    circuit.subscribe(circuit.zoom(_.mapData.entityMap)) {
+      entityMap => mapView.updateEntityMap(entityMap.value, assetManager)
+    }
+
     headerBg.setBounds(0, 570, 800, 30)
     headerBg.setColor(0, 0, 0, 1)
     headerLabel.setPosition(10, 570)
-    main.addActor(MapView(circuit.initialModel.mapData, circuit).initialize(assetManager))
+    main.addActor(mapView.initialize(assetManager))
     main.addActor(headerBg)
     main.addActor(headerLabel)
 
@@ -49,6 +57,10 @@ class GameScene()(implicit val appSettings: AppSettings) extends Scene {
     footerBg.setColor(0, 0, 0, 1)
     main.addActor(footerBg)
     main.addActor(new Label("Footer", labelStyle))
+
+    // add entity test
+    circuit(AddEntities(Map(Tile(1, 1) -> new FieldEntity {})))
+
     main
   }
   override def update(assetManager: AssetManager): Unit = ()
@@ -58,7 +70,8 @@ class GameScene()(implicit val appSettings: AppSettings) extends Scene {
     override protected def actionHandler: HandlerFunction = composeHandlers(mapHandler)
     val mapHandler = new ActionHandler(zoomTo(_.mapData)) {
       override protected def handle: PartialFunction[Any, ActionResult[GameModel]] = {
-        case SelectTile(tile) => updated(value.copy(selectedTile = Set(tile)))
+        case SelectTile(tile) => updated(value.copy(selectedTiles = Set(tile)))
+        case AddEntities(entityMap) => updated(value.copy(entityMap = entityMap))
       }
     }
   }
