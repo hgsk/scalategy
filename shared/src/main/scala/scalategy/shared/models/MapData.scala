@@ -1,7 +1,10 @@
 package scalategy.shared.models
 
-/**
-  * マップ情報
-  */
-class MapData
+trait MapDataLike {
+  val mapSize: MapSize
+  val entityMap: Map[Tile, FieldEntity]
+}
+
+case class MapSize(x: Int, y: Int)
+case class Tile(x: Int, y: Int)
 
