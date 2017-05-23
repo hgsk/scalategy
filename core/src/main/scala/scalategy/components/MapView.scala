@@ -14,9 +14,8 @@ import scalategy.common.UseAssets
 import scalategy.models.MapData
 import scalategy.shared.models.{FieldEntity, Tile}
 
-case class MapView(initialMapData: MapData, dispatcher: Dispatcher)(implicit appSettings: AppSettings) extends Group with Component {
+class MapView(initialMapData: MapData, dispatcher: Dispatcher)(implicit appSettings: AppSettings) extends Group with Component {
   import appSettings.stageHeight
-
   import MapView._
   val xOffset = 0
   val yOffset = 30
@@ -83,6 +82,7 @@ case class MapView(initialMapData: MapData, dispatcher: Dispatcher)(implicit app
 object MapView extends UseAssets {
   val ASSET_SQUARE = "square.png"
   val ASSET_DIAMOND = "diamond.png"
+  def apply(initialMapData: MapData, dispatcher: Dispatcher)(implicit appSettings: AppSettings): MapView = new MapView(initialMapData, dispatcher)
   override def assets: Assets = Set(
     (ASSET_SQUARE, classOf[Texture]),
     (ASSET_DIAMOND, classOf[Texture])

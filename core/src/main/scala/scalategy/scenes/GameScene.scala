@@ -3,11 +3,10 @@ package scalategy.scenes
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.{Color, Texture}
-import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
 import diode.{ActionHandler, ActionResult, Circuit}
 import gdxs.scenes.scene2d.Group
-import gdxs.scenes.scene2d.ui.Image
+import gdxs.scenes.scene2d.ui.{Image, Label}
 
 import scalategy.AppSettings
 import scalategy.components.MapView
@@ -36,7 +35,7 @@ class GameScene()(implicit val appSettings: AppSettings) extends Scene {
     val labelStyle = new LabelStyle(bitmapFont, new Color(0xffffffff))
     val headerBg = Image(squareTexture)
     val footerBg = Image(squareTexture)
-    val headerLabel = new Label("Header", labelStyle)
+    val headerLabel = Label("Header", labelStyle)
     val circuit = GameCircuit(GameModel(MapData.empty(MapSize(30, 30))))
     val mapView = MapView(circuit.initialModel.mapData, circuit)
 
@@ -57,11 +56,10 @@ class GameScene()(implicit val appSettings: AppSettings) extends Scene {
     footerBg.setBounds(0, 0, 800, 30)
     footerBg.setColor(0, 0, 0, 1)
     main.addActor(footerBg)
-    main.addActor(new Label("Footer", labelStyle))
+    main.addActor(Label("Footer", labelStyle))
 
     // add entity test
     circuit(AddEntities(Map(Tile(1, 1) -> new FieldEntity {})))
-
     main
   }
   override def update(assetManager: AssetManager): Unit = ()
