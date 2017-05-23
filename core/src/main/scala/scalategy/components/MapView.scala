@@ -3,25 +3,25 @@ package scalategy.components
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.{Color, Texture}
-import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
-import com.badlogic.gdx.scenes.scene2d.{Actor, Group, InputEvent}
+import com.badlogic.gdx.scenes.scene2d.{Actor, InputEvent}
 import diode.{Action, Dispatcher}
+import gdxs.scenes.scene2d.Group
+import gdxs.scenes.scene2d.ui.Image
 
 import scalategy.AppSettings
 import scalategy.common.UseAssets
 import scalategy.models.MapData
 import scalategy.shared.models.{FieldEntity, Tile}
 
-case class MapView(initialMapData: MapData, dispatcher: Dispatcher)(implicit appSettings: AppSettings) extends Group with Component {
+class MapView(initialMapData: MapData, dispatcher: Dispatcher)(implicit appSettings: AppSettings) extends Group with Component {
   import appSettings.stageHeight
-
   import MapView._
   val xOffset = 0
   val yOffset = 30
   val tileSize = 40
   val dragSensitivity: Int = 5 * 5 * 2
-  val entityLayer = new Group
+  val entityLayer = Group()
   private var tiles: Map[Tile, Actor] = Map.empty
   private var mapData: MapData = initialMapData
   def updateSelectedTiles(selectedTiles: Set[Tile]): Unit = {
@@ -50,12 +50,11 @@ case class MapView(initialMapData: MapData, dispatcher: Dispatcher)(implicit app
     val minY = ((tileSize + 1) * mapSizeY - mapHeight - yOffset) * -1
     setPosition(xOffset, yOffset)
     for (x <- 0 until mapSizeX; y <- 0 until mapSizeY) {
-      val square = new Image(squareTexture)
+      val square = Image(squareTexture)
       square.setBounds(x * (tileSize + 1), y * (tileSize + 1), tileSize, tileSize)
       addActor(square)
       tiles = tiles.updated(Tile(x, y), square)
     }
-    addActor(entityLayer)
     addListener(new ClickListener() {
       private var pos: (Float, Float) = _
       override def touchDown(event: InputEvent, x: Float, y: Float, pointer: Int, button: Int): Boolean = {
@@ -76,13 +75,14 @@ case class MapView(initialMapData: MapData, dispatcher: Dispatcher)(implicit app
       }
       override def clicked(event: InputEvent, x: Float, y: Float): Unit = dispatcher(SelectTile(tileByPos(x, y)))
     })
-    this
+    add(entityLayer)
   }
   private def tileByPos(x: Float, y: Float): Tile = Tile((x / (tileSize + 1)).toInt, (y / (tileSize + 1)).toInt)
 }
 object MapView extends UseAssets {
   val ASSET_SQUARE = "square.png"
   val ASSET_DIAMOND = "diamond.png"
+  def apply(initialMapData: MapData, dispatcher: Dispatcher)(implicit appSettings: AppSettings): MapView = new MapView(initialMapData, dispatcher)
   override def assets: Assets = Set(
     (ASSET_SQUARE, classOf[Texture]),
     (ASSET_DIAMOND, classOf[Texture])

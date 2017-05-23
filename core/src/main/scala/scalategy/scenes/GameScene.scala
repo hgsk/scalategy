@@ -3,10 +3,10 @@ package scalategy.scenes
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.{Color, Texture}
-import com.badlogic.gdx.scenes.scene2d.Group
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
-import com.badlogic.gdx.scenes.scene2d.ui.{Image, Label}
 import diode.{ActionHandler, ActionResult, Circuit}
+import gdxs.scenes.scene2d.Group
+import gdxs.scenes.scene2d.ui.{Image, Label}
 
 import scalategy.AppSettings
 import scalategy.components.MapView
@@ -29,14 +29,14 @@ class GameScene()(implicit val appSettings: AppSettings) extends Scene {
     ) ++ MapView.assets
   }
   override def enter(assetManager: AssetManager): Group = {
-    val main = new Group
+    val main = Group()
     val bitmapFont = assetManager.get[BitmapFont](ASSET_FONT)
     val squareTexture = assetManager.get[Texture](ASSET_SQUARE)
     val labelStyle = new LabelStyle(bitmapFont, new Color(0xffffffff))
-    val headerBg = new Image(squareTexture)
-    val footerBg = new Image(squareTexture)
-    val headerLabel = new Label("Header", labelStyle)
-    val circuit = new GameCircuit(GameModel(MapData.empty(MapSize(30, 30))))
+    val headerBg = Image(squareTexture)
+    val footerBg = Image(squareTexture)
+    val headerLabel = Label("Header", labelStyle)
+    val circuit = GameCircuit(GameModel(MapData.empty(MapSize(30, 30))))
     val mapView = MapView(circuit.initialModel.mapData, circuit)
 
     circuit.subscribe(circuit.zoom(_.mapData.selectedTiles)) {
@@ -56,11 +56,10 @@ class GameScene()(implicit val appSettings: AppSettings) extends Scene {
     footerBg.setBounds(0, 0, 800, 30)
     footerBg.setColor(0, 0, 0, 1)
     main.addActor(footerBg)
-    main.addActor(new Label("Footer", labelStyle))
+    main.addActor(Label("Footer", labelStyle))
 
     // add entity test
     circuit(AddEntities(Map(Tile(1, 1) -> new FieldEntity {})))
-
     main
   }
   override def update(assetManager: AssetManager): Unit = ()
@@ -74,6 +73,9 @@ class GameScene()(implicit val appSettings: AppSettings) extends Scene {
         case AddEntities(entityMap) => updated(value.copy(entityMap = entityMap))
       }
     }
+  }
+  object GameCircuit {
+    def apply(initialModel: GameModel): GameCircuit = new GameCircuit(initialModel)
   }
   case class GameModel(mapData: MapData)
 }
