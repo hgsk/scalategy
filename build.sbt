@@ -33,6 +33,19 @@ lazy val dev = (project in file("dev"))
   )
   .dependsOn(desktop, external)
 
+lazy val meta = (project in file("meta"))
+  .settings(
+    name := "scalategy-meta",
+    version := appV,
+    scalaVersion := scalaV,
+    libraryDependencies ++= Seq(
+      "com.badlogicgames.gdx" % "gdx" % "1.9.6",
+      "com.badlogicgames.gdx" % "gdx-backend-lwjgl" % "1.9.6",
+      "com.badlogicgames.gdx" % "gdx-platform" % "1.9.6" classifier "natives-desktop",
+      "com.github.czyzby" % "gdx-lml-vis" % "1.4.1.7.2"
+    )
+  )
+
 lazy val external = (project in file("external"))
   .settings(
     name := "scalategy-external",
