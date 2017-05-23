@@ -6,7 +6,7 @@ import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import upickle.default._
 
-import scalategy.shared.Api
+import scalategy.shared._
 
 object Server extends App {
   implicit val system = ActorSystem("server")
@@ -32,6 +32,10 @@ object Server extends App {
 
 class ApiImpl extends Api {
   override def echo(message: String): String = message
+  override def register(name: String): PlayerInfo = ???
+  override def createGame(gameSetting: GameSetting): GameInfo = ???
+  override def exec(command: Command): ExecStatus = ???
+  override def poll(): Event = ???
 }
 
 object AutowireServer extends autowire.Server[String, Reader, Writer] {
