@@ -13,6 +13,10 @@ Scala + libGDX によるストラテジーゲーム実装
 
 `$ sbt desktop/run`
 
+### Server
+
+`$ sbt server/run`
+
 ### Tools
 
 - Hiero

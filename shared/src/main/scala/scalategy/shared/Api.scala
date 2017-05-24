@@ -9,12 +9,15 @@ trait Api {
 }
 
 sealed trait Command
+case object Sync extends Command
+
 sealed trait Event
 case object NoEvent extends Event
+
 sealed trait ExecStatus
 case object Accepted extends ExecStatus
 
 case class GameSetting()
 case class GameInfo()
-case class PlayerInfo()
+case class PlayerInfo(name: String)
 

@@ -32,7 +32,7 @@ object Server extends App {
 
 class ApiImpl extends Api {
   override def echo(message: String): String = message
-  override def register(name: String): PlayerInfo = ???
+  override def register(name: String): PlayerInfo = PlayerInfo(name)
   override def createGame(gameSetting: GameSetting): GameInfo = ???
   override def exec(command: Command): ExecStatus = ???
   override def poll(): Event = ???
