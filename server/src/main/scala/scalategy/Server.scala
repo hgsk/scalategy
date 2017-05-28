@@ -33,7 +33,9 @@ object Server extends App {
 }
 
 trait ServerContextLike {
+  protected var gameInfos: Seq[GameInfo] = Seq.empty
   def registerPlayer(name: String): Try[Player]
+  def findGameBySessionKey(sessionKey: String): Option[GameInfo] = gameInfos.find(_.sessionKey == sessionKey)
 }
 object ServerContext extends ServerContextLike {
   override def registerPlayer(name: String): Try[Player] = ???
@@ -45,7 +47,9 @@ class ApiImpl(context: ServerContextLike) extends Api {
     context.registerPlayer(name)
     PlayerInfo(name)
   }
-  override def createGame(gameSetting: GameSetting): GameInfo = ???
+  override def createGame(gameSetting: GameSetting): Either[ServerError, GameInfo] =
+    if (context.findGameBySessionKey(gameSetting.sessionKey).isDefined) Left(CreateGameBySamePlayer)
+    else  Right(GameInfo(gameSetting.sessionKey))
   override def exec(command: Command): ExecStatus = ???
   override def poll(): Event = ???
 }
