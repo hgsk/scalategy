@@ -48,7 +48,8 @@ lazy val server = (project in file("server"))
     version := appV,
     scalaVersion := scalaV,
     libraryDependencies ++= Seq(
-      "com.typesafe.akka" %% "akka-http" % "10.0.6"
+      "com.typesafe.akka" %% "akka-http" % "10.0.6",
+      "com.typesafe.akka" %% "akka-testkit" % "2.5.2"
     )
   )
   .dependsOn(shared, external)

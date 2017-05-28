@@ -1,11 +1,12 @@
 package scalategy
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorRef, ActorSystem}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 import upickle.default._
 
+import scala.concurrent.Future
 import scala.util.Try
 import scalategy.models.Player
 import scalategy.shared._
@@ -35,13 +36,16 @@ object Server extends App {
 trait ServerContextLike {
   protected var gameInfos: Seq[GameInfo] = Seq.empty
   def registerPlayer(name: String): Try[Player]
+  def findSession(sessionKey: String): Option[ActorRef] = ???
   def findGameBySessionKey(sessionKey: String): Option[GameInfo] = gameInfos.find(_.sessionKey == sessionKey)
 }
 object ServerContext extends ServerContextLike {
   override def registerPlayer(name: String): Try[Player] = ???
 }
 
-class ApiImpl(context: ServerContextLike) extends Api {
+class ApiImpl(context: ServerContextLike)(implicit system: ActorSystem) extends Api {
+  import system.dispatcher
+
   override def echo(message: String): String = message
   override def register(name: String): PlayerInfo = {
     context.registerPlayer(name)
@@ -49,9 +53,14 @@ class ApiImpl(context: ServerContextLike) extends Api {
   }
   override def createGame(gameSetting: GameSetting): Either[ServerError, GameInfo] =
     if (context.findGameBySessionKey(gameSetting.sessionKey).isDefined) Left(CreateGameBySamePlayer)
-    else  Right(GameInfo(gameSetting.sessionKey))
-  override def exec(command: Command): ExecStatus = ???
-  override def poll(): Event = ???
+    else Right(GameInfo(gameSetting.sessionKey))
+  override def exec(command: Command): ExecStatus = {
+    context.findSession(command.sessionKey) match {
+      case Some(_) => Accepted
+      case None => Rejected
+    }
+  }
+  override def poll(): Future[Event] = Future(NoEvent)
 }
 
 object AutowireServer extends autowire.Server[String, Reader, Writer] {

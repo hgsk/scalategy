@@ -1,11 +1,17 @@
 package scalategy
 
+import akka.actor.ActorSystem
+import akka.testkit.{TestActors, TestKit}
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, Matchers}
 
 import scalategy.shared._
 
-class ApiSpec extends FlatSpec with Matchers with MockFactory {
+class ApiSpec extends TestKit(ActorSystem("my-system")) with FlatSpecLike with Matchers with MockFactory with BeforeAndAfterAll {
+  override def afterAll(): Unit = {
+    TestKit.shutdownActorSystem(system)
+  }
+
   trait Fixture {
     val ctx: ServerContextLike = mock[ServerContextLike]
     val api = new ApiImpl(ctx)
@@ -37,5 +43,21 @@ class ApiSpec extends FlatSpec with Matchers with MockFactory {
   it should "be error when already exists game created same player" in new Fixture with Session {
     (ctx.findGameBySessionKey _).expects(sessionKey).returning(Some(GameInfo(sessionKey)))
     val Left(CreateGameBySamePlayer) = api.createGame(GameSetting(sessionKey))
+  }
+
+  "Exec API" should "execute command" in new Fixture with Session {
+    (ctx.findSession _).expects(sessionKey).returning(Some(system.actorOf(TestActors.echoActorProps)))
+    api.exec(Sync(sessionKey)) shouldBe Accepted
+  }
+
+  it should "reject command on invalid session" in new Fixture with Session {
+    (ctx.findSession _).expects(sessionKey).returning(None)
+    api.exec(Sync(sessionKey)) shouldBe Rejected
+  }
+
+  "Poll API" should "return NoEvent when player's queue is empty" in new Fixture {
+  }
+
+  it should "return events on player's queue" in new Fixture {
   }
 }
