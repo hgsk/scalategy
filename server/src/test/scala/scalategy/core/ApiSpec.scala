@@ -1,10 +1,13 @@
-package scalategy
+package scalategy.core
 
-import akka.actor.ActorSystem
+import akka.actor.{Actor, ActorRef, ActorSystem, Props}
 import akka.testkit.{TestActors, TestKit}
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{BeforeAndAfterAll, FlatSpecLike, Matchers}
 
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
+import scalategy.ServerContextLike
 import scalategy.shared._
 
 class ApiSpec extends TestKit(ActorSystem("my-system")) with FlatSpecLike with Matchers with MockFactory with BeforeAndAfterAll {
@@ -19,6 +22,11 @@ class ApiSpec extends TestKit(ActorSystem("my-system")) with FlatSpecLike with M
   trait Session {
     _: Fixture =>
     val sessionKey = "foo"
+    def sessionActorRef(pollRes: Seq[Event] = Seq.empty): ActorRef = system.actorOf(Props(new Actor {
+      override def receive: Receive = {
+        case "poll" => sender() ! pollRes
+      }
+    }))
   }
 
   "Echo API" should "return requested message" in new Fixture {
@@ -55,9 +63,15 @@ class ApiSpec extends TestKit(ActorSystem("my-system")) with FlatSpecLike with M
     api.exec(Sync(sessionKey)) shouldBe Rejected
   }
 
-  "Poll API" should "return NoEvent when player's queue is empty" in new Fixture {
+  "Poll API" should "return NoEvent when player's queue is empty" in new Fixture with Session {
+    (ctx.findSession _).expects(sessionKey).returning(None)
+    Await.result(api.poll(sessionKey), Duration.Inf).size shouldBe 0
   }
 
-  it should "return events on player's queue" in new Fixture {
+  it should "return events on player's queue" in new Fixture with Session {
+    (ctx.findSession _)
+      .expects(sessionKey)
+      .returning(Some(sessionActorRef(Seq(NoEvent, NoEvent, NoEvent))))
+    Await.result(api.poll(sessionKey), Duration.Inf).size shouldBe 3
   }
 }

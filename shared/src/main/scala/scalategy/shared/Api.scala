@@ -7,7 +7,7 @@ trait Api {
   def register(name: String): PlayerInfo
   def createGame(gameSetting: GameSetting): Either[ServerError, GameInfo]
   def exec(command: Command): ExecStatus
-  def poll(): Future[Event]
+  def poll(sessionKey: String): Future[Seq[Event]]
 }
 
 sealed trait ServerError
