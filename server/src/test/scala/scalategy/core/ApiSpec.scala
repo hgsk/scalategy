@@ -19,7 +19,7 @@ class ApiSpec extends TestKit(ActorSystem("my-system")) with FlatSpecLike with M
     val ctx: ServerContextLike = mock[ServerContextLike]
     val api = new ApiImpl(ctx)
   }
-  trait Session {
+  trait SessionFixture {
     _: Fixture =>
     val sessionKey = "foo"
     def sessionActorRef(pollRes: Seq[Event] = Seq.empty): ActorRef = system.actorOf(Props(new Actor {
@@ -43,32 +43,32 @@ class ApiSpec extends TestKit(ActorSystem("my-system")) with FlatSpecLike with M
     playerInfo.name shouldBe name
   }
 
-  "Create Game API" should "create new Game" in new Fixture with Session {
+  "Create Game API" should "create new Game" in new Fixture with SessionFixture {
     (ctx.findGameBySessionKey _).expects(sessionKey).returning(None)
     val Right(gameInfo) = api.createGame(GameSetting(sessionKey))
   }
 
-  it should "be error when already exists game created same player" in new Fixture with Session {
+  it should "be error when already exists game created same player" in new Fixture with SessionFixture {
     (ctx.findGameBySessionKey _).expects(sessionKey).returning(Some(GameInfo(sessionKey)))
     val Left(CreateGameBySamePlayer) = api.createGame(GameSetting(sessionKey))
   }
 
-  "Exec API" should "execute command" in new Fixture with Session {
+  "Exec API" should "execute command" in new Fixture with SessionFixture {
     (ctx.findSession _).expects(sessionKey).returning(Some(system.actorOf(TestActors.echoActorProps)))
     api.exec(Sync(sessionKey)) shouldBe Accepted
   }
 
-  it should "reject command on invalid session" in new Fixture with Session {
+  it should "reject command on invalid session" in new Fixture with SessionFixture {
     (ctx.findSession _).expects(sessionKey).returning(None)
     api.exec(Sync(sessionKey)) shouldBe Rejected
   }
 
-  "Poll API" should "return NoEvent when player's queue is empty" in new Fixture with Session {
+  "Poll API" should "return NoEvent when player's queue is empty" in new Fixture with SessionFixture {
     (ctx.findSession _).expects(sessionKey).returning(None)
     Await.result(api.poll(sessionKey), Duration.Inf).size shouldBe 0
   }
 
-  it should "return events on player's queue" in new Fixture with Session {
+  it should "return events on player's queue" in new Fixture with SessionFixture {
     (ctx.findSession _)
       .expects(sessionKey)
       .returning(Some(sessionActorRef(Seq(NoEvent, NoEvent, NoEvent))))

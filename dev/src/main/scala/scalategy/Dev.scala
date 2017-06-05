@@ -1,7 +1,12 @@
 package scalategy
 
+import com.badlogic.gdx.Net.HttpMethods
+import com.badlogic.gdx.net.HttpRequestBuilder
+
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
-import scalategy.shared.Api
+import scalategy.net.AutowireClient
+import scalategy.shared.{Api, Constants}
 
 object Dev extends Desktop with App {
   implicit override val appSettings = new DevSettings {}
@@ -12,15 +17,35 @@ object Dev extends Desktop with App {
 class DevListener()(implicit appSettings: AppSettings) extends AppListener {
   import autowire._
 
-  import scala.concurrent.ExecutionContext.Implicits.global
+  private val apiClient = new AutowireClient(session)[Api]
+
   override def create(): Unit = {
     super.create()
-    AutowireClient[Api]
-      .echo("Hello libGDX!")
+    startSessionTest()
+  }
+  def startSessionTest(): Unit = {
+    val builder = new HttpRequestBuilder
+    builder
+      .newRequest()
+      .method(HttpMethods.POST)
+      .url("http://127.0.0.1:9000/session")
+    gdxs.net.sendHttpRequest(builder.build())
+      .onSuccess {
+        case res => {
+          session.token = res.getHeader(Constants.sessionHeaderName)
+          echoTest("Hello libGDX!")
+        }
+      }
+  }
+  def echoTest(message: String): Unit = {
+    apiClient
+      .echo(message)
       .call()
       .onComplete {
         case Success(r) => println(r)
-        case Failure(t) => println(t.getStackTrace.mkString("\n"))
+        case Failure(t) =>
+          println(t.getMessage)
+          println(t.getStackTrace.mkString("\n"))
       }
   }
 }
