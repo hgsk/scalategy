@@ -1,19 +1,19 @@
 package scalategy
 
-import com.badlogic.gdx.Net.{HttpMethods, HttpResponseListener}
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.GL20
-import com.badlogic.gdx.net.HttpRequestBuilder
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.viewport.FitViewport
-import com.badlogic.gdx.{ApplicationListener, Gdx, Net}
-import upickle.default._
+import com.badlogic.gdx.{ApplicationListener, Gdx}
 
-import scala.concurrent.{Future, Promise}
 import scalategy.scenes.{GameScene, Scene}
 
 class AppListener()(implicit appSettings: AppSettings) extends ApplicationListener {
   import appSettings._
+
+  // FIXME 暫定でここに設置
+  protected val session = new Session
+
   lazy val assetManager = new AssetManager()
   lazy val stage: Stage = new Stage(new FitViewport(stageWidth, stageHeight))
   private var initialized: Boolean = false
@@ -42,7 +42,6 @@ class AppListener()(implicit appSettings: AppSettings) extends ApplicationListen
       if (assetManager.update()) {
         currentScene.foreach(scene => stage.addActor(scene.enter(assetManager)))
         initialized = true
-
       } else {
         // Now Loading...
       }
@@ -64,24 +63,9 @@ class AppListener()(implicit appSettings: AppSettings) extends ApplicationListen
   override def pause(): Unit = ()
 }
 
-object AutowireClient extends autowire.Client[String, Reader, Writer] {
-  override def doCall(req: Request): Future[String] = {
-    val builder = new HttpRequestBuilder
-    val promise = Promise[String]()
-    builder
-      .newRequest()
-      .method(HttpMethods.POST)
-      .url("http://127.0.0.1:9000/api/" + req.path.mkString("/"))
-      .content(upickle.default.write(req.args))
-    Gdx.net.sendHttpRequest(builder.build(), new HttpResponseListener {
-      override def failed(t: Throwable): Unit = promise.failure(t)
-      override def handleHttpResponse(httpResponse: Net.HttpResponse): Unit = promise.success(httpResponse.getResultAsString)
-      override def cancelled(): Unit = promise.failure(CanceledException)
-    })
-    promise.future
-  }
-  override def read[Result: Reader](p: String): Result = upickle.default.read[Result](p)
-  override def write[Result: Writer](r: Result): String = upickle.default.write(r)
+// FIXME 暫定でここに設置
+class Session {
+  var token: Option[String] = None
 }
 
 object CanceledException extends Throwable
