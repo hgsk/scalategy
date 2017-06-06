@@ -8,6 +8,6 @@ import scalategy.common.UseAssets
 trait Scene extends UseAssets {
   override def assets: Assets = Set.empty
   def enter(assetManager: AssetManager): Group
-  def update(assetManager: AssetManager): Unit
+  def update(assetManager: AssetManager): Option[Scene]
   def exit(assetManager: AssetManager): Unit
 }

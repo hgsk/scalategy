@@ -6,7 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.badlogic.gdx.{ApplicationListener, Gdx}
 
-import scalategy.scenes.{GameScene, Scene}
+import scalategy.scenes.{Scene, TitleScene}
 
 class AppListener()(implicit appSettings: AppSettings) extends ApplicationListener {
   import appSettings._
@@ -32,7 +32,7 @@ class AppListener()(implicit appSettings: AppSettings) extends ApplicationListen
   }
   override def create(): Unit = {
     Gdx.input.setInputProcessor(stage)
-    changeScene(new GameScene)
+    changeScene(new TitleScene)
   }
   override def render(): Unit = {
     Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
@@ -46,7 +46,9 @@ class AppListener()(implicit appSettings: AppSettings) extends ApplicationListen
         // Now Loading...
       }
     } else {
-      currentScene.foreach(_.update(assetManager))
+      currentScene
+        .flatMap(_.update(assetManager))
+        .foreach(changeScene)
     }
 
     stage.act(Gdx.graphics.getDeltaTime)
