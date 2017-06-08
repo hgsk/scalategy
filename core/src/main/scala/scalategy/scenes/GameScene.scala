@@ -14,7 +14,7 @@ import scalategy.components.MapView.{AddEntities, SelectTile}
 import scalategy.models.MapData
 import scalategy.shared.models.{FieldEntity, MapSize, Tile}
 
-class GameScene()(implicit val appSettings: AppSettings) extends Scene {
+class GameScene()(implicit appSettings: AppSettings) extends Scene {
   scene =>
   val ASSET_CIRCLE = "circle.png"
   val ASSET_SQUARE = "square.png"
@@ -62,7 +62,7 @@ class GameScene()(implicit val appSettings: AppSettings) extends Scene {
     circuit(AddEntities(Map(Tile(1, 1) -> new FieldEntity {})))
     main
   }
-  override def update(assetManager: AssetManager): Unit = ()
+  override def update(assetManager: AssetManager): Option[Scene] = None
   override def exit(assetManager: AssetManager): Unit = ()
 
   class GameCircuit(val initialModel: GameModel) extends Circuit[GameModel] {
