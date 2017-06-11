@@ -5,3 +5,4 @@ scala:
     - 2.11.8
 script:
     - sbt ++$TRAVIS_SCALA_VERSION server/test
+    - sbt ++$TRAVIS_SCALA_VERSION shared/test
