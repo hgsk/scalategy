@@ -6,6 +6,7 @@ import com.badlogic.gdx.net.HttpRequestBuilder
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 import scalategy.net.AutowireClient
+import scalategy.shared.settings.{NetworkSettings, NetworkSettingsLike}
 import scalategy.shared.{Api, Constants}
 
 object Dev extends Desktop with App {
@@ -28,13 +29,12 @@ class DevListener()(implicit appSettings: AppSettings) extends AppListener {
     builder
       .newRequest()
       .method(HttpMethods.POST)
-      .url("http://127.0.0.1:9000/session")
+      .url(s"${appSettings.baseUrl}/session")
     gdxs.net.sendHttpRequest(builder.build())
       .onSuccess {
-        case res => {
+        case res =>
           session.token = res.getHeader(Constants.sessionHeaderName)
           echoTest("Hello libGDX!")
-        }
       }
   }
   def echoTest(message: String): Unit = {
@@ -50,4 +50,6 @@ class DevListener()(implicit appSettings: AppSettings) extends AppListener {
   }
 }
 
-trait DevSettings extends DesktopSettings
+trait DevSettings extends DesktopSettings {
+  override lazy val networkSettings: NetworkSettingsLike = NetworkSettings("localhost", 9000)
+}
