@@ -3,11 +3,8 @@ package scalategy.scenes
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.BitmapFont
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle
-import com.badlogic.gdx.scenes.scene2d.ui.{Table, TextButton}
-import com.badlogic.gdx.scenes.scene2d.utils.{ClickListener, NinePatchDrawable}
-import com.badlogic.gdx.scenes.scene2d.{Group, InputEvent}
-import gdxs.graphics.g2d.NinePatch
+import com.badlogic.gdx.scenes.scene2d.Group
+import com.badlogic.gdx.scenes.scene2d.ui.Table
 import gdxs.scenes.scene2d.ui.Button
 
 import scalategy.AppSettings

@@ -7,6 +7,7 @@ class Group extends GdxGroup {
     super.addActor(actor)
     this
   }
+  def +(actor: Actor): Group = add(actor)
 }
 object Group {
   def apply(): Group = new Group()
