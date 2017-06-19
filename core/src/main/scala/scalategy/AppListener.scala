@@ -2,7 +2,7 @@ package scalategy
 
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.GL20
-import com.badlogic.gdx.scenes.scene2d.Stage
+import com.badlogic.gdx.scenes.scene2d.{Group, Stage}
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.badlogic.gdx.{ApplicationListener, Gdx}
 
@@ -40,7 +40,7 @@ class AppListener()(implicit appSettings: AppSettings) extends ApplicationListen
 
     if (!initialized) {
       if (assetManager.update()) {
-        currentScene.foreach(scene => stage.addActor(scene.enter(assetManager)))
+        currentScene.foreach(scene => stage.addActor(entered(scene, scene.enter(assetManager))))
         initialized = true
       } else {
         // Now Loading...
@@ -63,6 +63,7 @@ class AppListener()(implicit appSettings: AppSettings) extends ApplicationListen
   }
   override def resume(): Unit = ()
   override def pause(): Unit = ()
+  def entered(sceneAndGroup: (Scene, Group)): Group = sceneAndGroup._2
 }
 
 // FIXME 暫定でここに設置

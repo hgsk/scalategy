@@ -9,13 +9,13 @@ class MovableEntitySpec extends FlatSpec with Matchers {
     }
     val fromTile = Tile(10, 10)
     val toTile = Tile(15, 15)
-    def entity: MovableEntity = new MovableEntity {
+    def entity: MovableEntityLike = new MovableEntityLike {
       override val gameUnits: Set[GameUnit] = Set(gameUnit)
-      override def currentTile: Tile = fromTile
+      override def coordinates: Coordinates = fromTile.toCoordinates
     }
-    def entity(entityGameUnits: Set[GameUnit]): MovableEntity = new MovableEntity {
+    def entity(entityGameUnits: Set[GameUnit]): MovableEntityLike = new MovableEntityLike {
       override val gameUnits: Set[GameUnit] = entityGameUnits
-      override def currentTile: Tile = fromTile
+      override def coordinates: Coordinates = fromTile.toCoordinates
     }
     def gameUnit: GameUnit = gameUnit(1)
     def gameUnit(gameUnitSpeed: Int): GameUnit = new GameUnit {

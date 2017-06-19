@@ -2,25 +2,25 @@ package scalategy.components
 
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.assets.AssetManager
-import com.badlogic.gdx.graphics.{Color, Texture}
+import com.badlogic.gdx.graphics.Texture
+import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener
 import com.badlogic.gdx.scenes.scene2d.{Actor, InputEvent}
 import diode.{Action, Dispatcher}
+import gdxs.Implicits._
 import gdxs.scenes.scene2d.Group
-import gdxs.scenes.scene2d.ui.Image
 
 import scalategy.AppSettings
 import scalategy.common.UseAssets
 import scalategy.models.MapData
-import scalategy.shared.models.{FieldEntity, Tile}
+import scalategy.shared.models.{FieldEntity, MovableEntity, Tile}
 
 class MapView(initialMapData: MapData, dispatcher: Dispatcher)(implicit appSettings: AppSettings) extends Group with Component {
+  import appSettings.mapSettings._
   import appSettings.stageHeight
+
   import MapView._
-  val xOffset = 0
-  val yOffset = 30
-  val tileSize = 40
-  val dragSensitivity: Int = 5 * 5 * 2
+  import scalategy.shared.Constants.tileSize
   val entityLayer = Group()
   private var tiles: Map[Tile, Actor] = Map.empty
   private var mapData: MapData = initialMapData
@@ -29,29 +29,33 @@ class MapView(initialMapData: MapData, dispatcher: Dispatcher)(implicit appSetti
     selectedTiles.map(tiles).foreach(_.setColor(1, 0, 0, 1))
     mapData = mapData.copy(selectedTiles = selectedTiles)
   }
-  def updateEntityMap(entityMap: Map[Tile, FieldEntity], assetManager: AssetManager): Unit = {
+  def updateEntityMap(entities: Map[Long, FieldEntity], assetManager: AssetManager): Unit = {
     entityLayer.clear()
-    val diamondTexture = assetManager.get[Texture](ASSET_DIAMOND)
-    val yellow = new Color(.9f, .9f, 0, 1)
-    for ((tile, _) <- entityMap) {
-      val resource = new Image(diamondTexture)
-      resource.setBounds(tile.x * (tileSize + 1) + tileSize / 4, tile.y * (tileSize + 1), tileSize / 2, tileSize)
-      resource.setColor(yellow)
-      entityLayer.addActor(resource)
+    for ((_, entity) <- entities) {
+      entityLayer.addActor(entityToImage(entity, assetManager))
+    }
+  }
+  def entityToImage(entity: FieldEntity, assetManager: AssetManager): Image = {
+    entity match {
+      case _: MovableEntity =>
+        assetManager
+          .image(ASSET_CIRCLE)
+          .bounds(entity.coordinates.modXY(_ + tileSize / 4), tileSize / 2)
+          .color(0, 0, .9f, 1)
+      case _ =>
+        assetManager
+          .image(ASSET_DIAMOND)
+          .bounds(entity.coordinates.modX(_ + tileSize / 4), tileSize / 2, tileSize)
+          .color(.9f, .9f, 0, 1)
     }
   }
   override def initialize(assetManager: AssetManager): Actor = {
-    val squareTexture = assetManager.get[Texture](ASSET_SQUARE)
     val mapSizeX = mapData.mapSize.x
     val mapSizeY = mapData.mapSize.y
-    val mapWidth = 800
-    val mapHeight = 540
-    val minX = ((tileSize + 1) * mapSizeX - mapWidth - xOffset) * -1
-    val minY = ((tileSize + 1) * mapSizeY - mapHeight - yOffset) * -1
-    setPosition(xOffset, yOffset)
+    val minX = ((tileSize + 1) * mapSizeX - mapWidth - offsetX) * -1
+    val minY = ((tileSize + 1) * mapSizeY - mapHeight - offsetY) * -1
     for (x <- 0 until mapSizeX; y <- 0 until mapSizeY) {
-      val square = Image(squareTexture)
-      square.setBounds(x * (tileSize + 1), y * (tileSize + 1), tileSize, tileSize)
+      val square = assetManager.image(ASSET_SQUARE).bounds(Tile(x, y).toCoordinates, tileSize)
       addActor(square)
       tiles = tiles.updated(Tile(x, y), square)
     }
@@ -67,8 +71,8 @@ class MapView(initialMapData: MapData, dispatcher: Dispatcher)(implicit appSetti
         if (dx * dx + dy * dy >= dragSensitivity) {
           cancel()
           setPosition(
-            (Gdx.input.getX - pos._1).max(minX).min(xOffset),
-            (stageHeight - Gdx.input.getY - pos._2).max(minY).min(yOffset)
+            (Gdx.input.getX - pos._1).max(minX).min(offsetX),
+            (stageHeight - Gdx.input.getY - pos._2).max(minY).min(offsetY)
           )
           super.touchDragged(event, x, y, pointer)
         }
@@ -82,11 +86,12 @@ class MapView(initialMapData: MapData, dispatcher: Dispatcher)(implicit appSetti
 object MapView extends UseAssets {
   val ASSET_SQUARE = "square.png"
   val ASSET_DIAMOND = "diamond.png"
+  val ASSET_CIRCLE = "circle.png"
   def apply(initialMapData: MapData, dispatcher: Dispatcher)(implicit appSettings: AppSettings): MapView = new MapView(initialMapData, dispatcher)
   override def assets: Assets = Set(
     (ASSET_SQUARE, classOf[Texture]),
     (ASSET_DIAMOND, classOf[Texture])
   )
   case class SelectTile(tile: Tile) extends Action
-  case class AddEntities(entityMap: Map[Tile, FieldEntity]) extends Action
+  case class AddEntities(entities: Seq[FieldEntity]) extends Action
 }
