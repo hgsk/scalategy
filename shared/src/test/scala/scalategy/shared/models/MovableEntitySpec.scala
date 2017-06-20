@@ -10,14 +10,16 @@ class MovableEntitySpec extends FlatSpec with Matchers {
     val fromTile = Tile(10, 10)
     val toTile = Tile(15, 15)
     def entity: MovableEntityLike = new MovableEntityLike {
+      override val entityId = 1l
       override val gameUnits: Set[GameUnit] = Set(gameUnit)
       override def coordinates: Coordinates = fromTile.toCoordinates
     }
     def entity(entityGameUnits: Set[GameUnit]): MovableEntityLike = new MovableEntityLike {
+      override val entityId = 1l
       override val gameUnits: Set[GameUnit] = entityGameUnits
       override def coordinates: Coordinates = fromTile.toCoordinates
     }
-    def gameUnit: GameUnit = gameUnit(1)
+    def gameUnit: GameUnit = gameUnit(1000)
     def gameUnit(gameUnitSpeed: Int): GameUnit = new GameUnit {
       override val speed: Int = gameUnitSpeed
     }
@@ -27,8 +29,8 @@ class MovableEntitySpec extends FlatSpec with Matchers {
 
   it should "calculate speed" in new Fixture {
     entity.calcSpeed shouldBe 1
-    entity(Set(gameUnit(2))).calcSpeed shouldBe 2
-    entity(Set(gameUnit(2), gameUnit(3), gameUnit(4))).calcSpeed shouldBe 2
+    entity(Set(gameUnit(2000))).calcSpeed shouldBe 2
+    entity(Set(gameUnit(2000), gameUnit(3000), gameUnit(4000))).calcSpeed shouldBe 2
   }
 
   it should "calculate duration" in new Fixture {
