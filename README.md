@@ -12,3 +12,17 @@ Scala + libGDX によるストラテジーゲーム実装
 ### Desktop
 
 `$ sbt desktop/run`
+
+### Server
+
+`$ sbt server/run`
+
+### Tools
+
+- Hiero
+
+`$ sbt hiero/run`
+
+- ParticleEditor
+
+`$sbt particleEditor/run`
